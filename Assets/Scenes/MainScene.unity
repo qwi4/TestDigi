@@ -524,7 +524,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -6.34}
-  m_LocalScale: {x: 10, y: 10, z: 1}
+  m_LocalScale: {x: 16.61, y: 14.267, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1783483802}
@@ -2585,6 +2585,9 @@ MonoBehaviour:
   _uiVac: {fileID: 966431142}
   _uiI: {fileID: 2077282716}
   _uiR: {fileID: 1230961512}
+  _resistance: 1000
+  _power: 400
+  _acFixed: 0.01
 --- !u!1 &1230961511
 GameObject:
   m_ObjectHideFlags: 0
