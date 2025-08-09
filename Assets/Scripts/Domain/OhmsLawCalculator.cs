@@ -4,35 +4,22 @@ namespace TestDigiTech.Domain
 {
     public class OhmsLawCalculator : IMultimeterCalculator
     {
+        private readonly double _resistanceOhms;
+        private readonly double _powerWatts;
         private readonly double _voltageAcFixed;
 
-        public double Resistance { get; private set; }
-        public double Power { get; private set; }
-
-        public double Current
-        {
-            get
-            {
-                if (Resistance <= 0 || Power < 0) return 0;
-                return Math.Sqrt(Power / Resistance);
-            }
-        }
-
-        public double VoltageDC
-        {
-            get
-            {
-                if (Resistance <= 0) return 0;
-                return Current * Resistance;
-            }
-        }
-
-        public double VoltageAC => _voltageAcFixed;
+        private double Current => Math.Sqrt(_powerWatts / _resistanceOhms);
+        private double VoltageDC => Current * _resistanceOhms;
+        private double VoltageAC => _voltageAcFixed;
 
         public OhmsLawCalculator(double resistance, double power, double acFixed)
         {
-            Resistance = resistance;
-            Power = power;
+            if (resistance <= 0) throw new ArgumentOutOfRangeException(nameof(resistance), "Resistance must be > 0");
+            if (power < 0) throw new ArgumentOutOfRangeException(nameof(power), "Power must be >= 0");
+            if (acFixed < 0) throw new ArgumentOutOfRangeException(nameof(acFixed), "AC voltage must be >= 0");
+
+            _resistanceOhms = resistance;
+            _powerWatts = power;
             _voltageAcFixed = acFixed;
         }
 
@@ -44,11 +31,11 @@ namespace TestDigiTech.Domain
                 MultimeterMode.VoltageDC => VoltageDC,
                 MultimeterMode.VoltageAC => VoltageAC,
                 MultimeterMode.Current => Current,
-                MultimeterMode.Resistance => Resistance,
+                MultimeterMode.Resistance => _resistanceOhms,
                 _ => 0.0
             };
 
-            return new MultimeterReadout(display, VoltageDC, VoltageAC, Current, Resistance);
+            return new MultimeterReadout(display, VoltageDC, VoltageAC, Current, _resistanceOhms);
         }
     }
 }

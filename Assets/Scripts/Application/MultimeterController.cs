@@ -1,5 +1,3 @@
-using System.Globalization;
-using TestDigiTech.Application;
 using TestDigiTech.Domain;
 using UnityEngine;
 using TMPro;
@@ -12,12 +10,8 @@ namespace TestDigiTech.Presentation
         [SerializeField] private Camera _camera;
         [SerializeField] private LayerMask _interactableMask;
 
-        [Header("TMP Outputs")]
-        [SerializeField] private TMP_Text _resultText;
-        [SerializeField] private TMP_Text _uiVdc;
-        [SerializeField] private TMP_Text _uiVac;
-        [SerializeField] private TMP_Text _uiI;
-        [SerializeField] private TMP_Text _uiR;
+        [Header("View")] 
+        [SerializeField] private MultimeterView _view;
         
         [Space, Header("Settings")]
         [SerializeField] private float _resistance = 1000.0f;
@@ -26,12 +20,12 @@ namespace TestDigiTech.Presentation
         
         private TriggerSwitch _activeKnob;
         private bool _hoverActive;
-        private MultimeterService _service;
+        private MultimeterModel _model;
 
         private void Awake()
         {
             var calc = new OhmsLawCalculator(_resistance, _power, _acFixed);
-            _service = new MultimeterService(calc);
+            _model = new MultimeterModel(calc);
         }
 
         private void Update()
@@ -84,29 +78,16 @@ namespace TestDigiTech.Presentation
 
         private void UpdateUI()
         {
-            if (_activeKnob == null) 
+            if (_activeKnob == null || _view == null)
                 return;
-            
+
             var mode = GetModeByAngle(_activeKnob.ZAngle);
-            RenderUI(mode);
+            _model.SetMode(mode);
+            var readout = _model.GetReadout();
+            _view.Render(readout, mode);
         }
 
-        private void RenderUI(MultimeterMode mode)
-        {
-            var readout = _service.Calculate(mode);
-
-            _resultText.text = readout.DisplayValue.ToString("F2", CultureInfo.InvariantCulture) + GetSuffix(mode);
-
-            var zero = 0.0.ToString("F2", CultureInfo.InvariantCulture);
-            _uiVdc.text = mode == MultimeterMode.VoltageDC 
-                ? readout.VoltageDC.ToString("F2", CultureInfo.InvariantCulture) : zero;
-            _uiVac.text = mode == MultimeterMode.VoltageAC 
-                ? readout.VoltageAC.ToString("F2", CultureInfo.InvariantCulture) : zero;
-            _uiI.text = mode == MultimeterMode.Current   
-                ? readout.Current.ToString("F2",   CultureInfo.InvariantCulture) : zero;
-            _uiR.text = mode == MultimeterMode.Resistance
-                ? readout.Resistance.ToString("F2",CultureInfo.InvariantCulture) : zero;
-        }
+        // View rendering is delegated to MultimeterView
 
         private MultimeterMode GetModeByAngle(float zDegrees)
         {
@@ -137,13 +118,6 @@ namespace TestDigiTech.Presentation
             return d;
         }
 
-        private string GetSuffix(MultimeterMode mode) => mode switch
-        {
-            MultimeterMode.VoltageDC => " V",
-            MultimeterMode.VoltageAC => " V~",
-            MultimeterMode.Current => " A",
-            MultimeterMode.Resistance => " Ω",
-            _ => ""
-        };
+        // Suffix mapping is handled by MultimeterView
     }
 }
